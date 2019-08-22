@@ -29,21 +29,23 @@
 import numpy as np
 
 import math
-M  = 28.0
-kb = 1.38E-23
-T  = 273.15
-NA = 6.022E23
-m  = (M/1000)/ NA
-dt = 1E-12
+M               = 28.0
+kb              = 1.38E-23
+T               = 273.15
+NA              = 6.022E23
+m               = (M/1000)/ NA
+dt              = 1E-12
 number_of_steps = 1000
-r  = 2.0
+r               = 2.0
+r_cutoff        = 8.0  
 
+#phicutoff = 4 * ((Rcutoff**-12) - (Rcutoff ** -6))
 
 #parameters
-natoms =  5 
-sigma  = math.sqrt((kb * T)/m)
-mu     = 0 
-box    = [(-50,50), (-50, 50), (-50, 50)]  
+natoms          =  5 
+sigma           = math.sqrt((kb * T)/m)
+mu              = 0 
+box             = [(-50,50), (-50, 50), (-50, 50)]  
 
 
 pos = np.random.rand(natoms, 3)
@@ -52,14 +54,25 @@ ux  = (np.random.normal(mu, sigma, natoms))*1E10
 uy  = (np.random.normal(mu, sigma, natoms))*1E10
 uz  = (np.random.normal(mu, sigma, natoms))*1E10
 
-fx = np.zeros(natoms)
-fy = np.zeros(natoms)
-fz = np.zeros(natoms)
+fx  = np.zeros(natoms)
+fy  = np.zeros(natoms)
+fz  = np.zeros(natoms)
 
+ene_pot = np.zeros(natoms)
 
 
 def export_cell (box):
 	""" Function doc 
+	#                #text +=  "ATOM     1  " + atom +   " " +resn+ "  {:4d}    {:8.3f}{:8.3f}{:8.3f}  1.00  0.00          Na+\n".format(resi, float(k), float(i), float(j))
+	#
+	#                #ATOM, idx, Aname, " ",resn, ' ', chainID,resi,   x,     y,     z,    occ,   tpF,        segID,element," "
+	#                text += "{:<6s}{:5d} {:<4s}{:1s}{:<3s}{:1s}{:4s}{:<2s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}      {:<4s}{:2s}  {:2s}\n".format(ATOM,
+	#               
+		
+	
+	
+	
+	
 	ATOM  1      H   LIG  1        -50.00  -50.00  -50.000   1.00  300.00          H 0000  
 	ATOM  2      H   LIG  1        -50.00   50.00  -50.000   1.00  300.00          H 0000  
 	ATOM  3      H   LIG  1        -50.00  -50.00   50.000   1.00  300.00          H 0000  
@@ -79,14 +92,15 @@ def export_cell (box):
 	"""
 
 	cellout = open('cell_xyz.pdb', 'w')
-	string  = "ATOM  1      H   LIG  1         %s  %s  %s   1.00  300.00          H 0000\n" %(str(box[0][0]), str(box[1][0]), str(box[2][0]))
-	string += "ATOM  2      H   LIG  1         %s  %s  %s   1.00  300.00          H 0000\n" %(str(box[0][0]), str(box[1][1]), str(box[2][0]))
-	string += "ATOM  3      H   LIG  1         %s  %s  %s   1.00  300.00          H 0000\n" %(str(box[0][0]), str(box[1][0]), str(box[2][1]))
-	string += "ATOM  4      H   LIG  1         %s  %s  %s   1.00  300.00          H 0000\n" %(str(box[0][1]), str(box[1][0]), str(box[2][0]))
-	string += "ATOM  5      H   LIG  1         %s  %s  %s   1.00  300.00          H 0000\n" %(str(box[0][1]), str(box[1][1]), str(box[2][0]))
-	string += "ATOM  6      H   LIG  1         %s  %s  %s   1.00  300.00          H 0000\n" %(str(box[0][1]), str(box[1][0]), str(box[2][1]))
-	string += "ATOM  7      H   LIG  1         %s  %s  %s   1.00  300.00          H 0000\n" %(str(box[0][0]), str(box[1][1]), str(box[2][1]))
-	string += "ATOM  8      H   LIG  1         %s  %s  %s   1.00  300.00          H 0000\n" %(str(box[0][1]), str(box[1][1]), str(box[2][1]))
+	#         "ATOM     1  " + atom +   " " +resn+ "  {:4d}    {:8.3f}{:8.3f}{:8.3f}  1.00  0.00
+	string  = "ATOM  1      H   LIG  1       {:8.3f}{:8.3f}{:8.3f}  1.00  300.00          H 0000\n".format(float(box[0][0]), float(box[1][0]), float(box[2][0]))
+	string += "ATOM  2      H   LIG  1       {:8.3f}{:8.3f}{:8.3f}  1.00  300.00          H 0000\n".format(float(box[0][0]), float(box[1][1]), float(box[2][0]))
+	string += "ATOM  3      H   LIG  1       {:8.3f}{:8.3f}{:8.3f}  1.00  300.00          H 0000\n".format(float(box[0][0]), float(box[1][0]), float(box[2][1]))
+	string += "ATOM  4      H   LIG  1       {:8.3f}{:8.3f}{:8.3f}  1.00  300.00          H 0000\n".format(float(box[0][1]), float(box[1][0]), float(box[2][0]))
+	string += "ATOM  5      H   LIG  1       {:8.3f}{:8.3f}{:8.3f}  1.00  300.00          H 0000\n".format(float(box[0][1]), float(box[1][1]), float(box[2][0]))
+	string += "ATOM  6      H   LIG  1       {:8.3f}{:8.3f}{:8.3f}  1.00  300.00          H 0000\n".format(float(box[0][1]), float(box[1][0]), float(box[2][1]))
+	string += "ATOM  7      H   LIG  1       {:8.3f}{:8.3f}{:8.3f}  1.00  300.00          H 0000\n".format(float(box[0][0]), float(box[1][1]), float(box[2][1]))
+	string += "ATOM  8      H   LIG  1       {:8.3f}{:8.3f}{:8.3f}  1.00  300.00          H 0000\n".format(float(box[0][1]), float(box[1][1]), float(box[2][1]))
 	string += "CONECT    1    2    3    4 \n"
 	string += "CONECT    2    7    5      \n"
 	string += "CONECT    3    7    6      \n"
@@ -126,7 +140,8 @@ def integrate (pos, ux, uy, uz, fx, fy, fz, mass, dt):
 	""" Function doc """
 	#usaremos a formula de euler - tem coisa melhor
 	for i in range(natoms):
-		print pos[i][0],  pos[i][1], pos[i][2]
+		print i, pos[i][0],  pos[i][1], pos[i][2], fx[i], fy[i], fz[i]
+		
 		pos[i][0]  += ux[i] * dt
 		ux[i]      += fx[i] * dt / m
 
@@ -142,15 +157,69 @@ def sphereHitCheck (pos, ux, uy, uz, fx, fy, fz):
 		for j in range (i+1, natoms):
 			#check X
 			
-			
 			d_x = pos[i][0] - pos[j][0]
 			d_y = pos[i][1] - pos[j][1]
 			d_z = pos[i][2] - pos[j][2]
+			
+			if d_x < r_cutoff or d_y < r_cutoff or d_z < r_cutoff:
+				
+				r_abs = math.sqrt(d_x**2 + d_y**2 + d_z**2) 
+				
+				#for k in range(DIM):        #particle pair seperation
+				
+				#	r[k] = pos[k][i] - pos[k][j]
+				
+				#
+				
+				#r_abs = np.sqrt(r[0]**2 + r[1]**2 + r[2]**2)
+				
+				if r_abs < r_cutoff:     #checks if the particles are within the cutoff distance
+					#calculated Lennard Jones potential
+					
+					###lj_pot = ( (4*( (r_abs**-12) - (r_abs**-6) ) ) - phicutoff)
+					
+					#updates potential energy array
+					
+					#ene_pot[i] += lj_pot
+					#ene_pot[j] += lj_pot
 
-			dist = (d_x**2 + d_y**2 + d_z**2) 
+					#F = -div(V)
+					lj_force = 24 * ((2*r_abs**-13)- (r_abs**-7))
+					
+					#force[k] = lj_force * (r[k]/r_abs)
+					force_x = lj_force * (d_x/r_abs)
+					force_y = lj_force * (d_y/r_abs)
+					force_z = lj_force * (d_z/r_abs)
+					
+					fx[i] += force_x
+					fy[i] += force_y
+					fz[i] += force_z
+					
+					fx[j] += force_x
+					fy[j] += force_y
+					fz[j] += force_z
+					
+					#for k in range(3):
+					#	#Fx = dV/dr * dr/dx
+					#	#dr/dx = x/r 
+					#	force[k] = lj_force * (r[k]/r_abs)
+					#
+					#	#accelaration array updated using force due to Lennard jones potential
+					#	#Fij = -Fji
+					#	# a(t+dt) = f(t) / m where m = 1 in reduced units 
+					#	acc[k][i] += force[k]
+                    #        acc[k][j] -= force[k]
+					#
 			
 			
 			
+			
+			
+			
+			
+			else:
+				pass
+
 
 			#if diff_x <= r:
 			#	ux[i] = -ux[i]
