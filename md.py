@@ -27,38 +27,157 @@
 # este programa gera a distribuição de normal de velocidade de um gas para uma unica componete
 
 import numpy as np
-
 import math
-M               = 28.0
-kb              = 1.38E-23
-T               = 273.15
-NA              = 6.022E23
-m               = (M/1000)/ NA
-dt              = 1E-12
-number_of_steps = 1000
-r               = 2.0
-r_cutoff        = 8.0  
-
-#phicutoff = 4 * ((Rcutoff**-12) - (Rcutoff ** -6))
-
-#parameters
-natoms          =  5 
-sigma           = math.sqrt((kb * T)/m)
-mu              = 0 
-box             = [(-50,50), (-50, 50), (-50, 50)]  
 
 
+
+parameters = {
+				'kb'         : 1.38E-23                         ,
+				'NA'         : 6.022E23                         ,
+				'box'        : [(-50,50), (-50, 50), (-50, 50)] ,
+				'T'          : 273.15                           ,
+				'dt'         : 1E-12                            ,
+				'nsteps'     : 1000                             ,
+				'r_cutoff'   : 8.0                              ,   
+			
+				'trajout'    : 'traj.xyz'                       , 
+			
+			 }
+
+
+atoms_dic = {			  
+			 'Ar': {'q'       : 0.000   , 
+					"LJ"      : 2.5     ,
+					'm'       : 39.948  ,
+					'sigma'   : 3.4E-10 ,
+					'epsilon' : 1.65E-21,
+					},
+			 
+			 'Ne': {'q' : 0.000, 
+					"LJ": 2.5  ,
+			        },
+
+			}
+
+
+
+
+class System:
+	""" Class doc """
+	
+	def __init__ (self, atoms):
+		""" Class initialiser """
+		self.atoms = []
+		
+		self.size  = len(atoms)
+		
+		#natoms = len(atoms)
+		self.name = []
+		self.x  = np.zeros (self.size)
+		self.y  = np.zeros (self.size)
+		self.z  = np.zeros (self.size)
+
+		self.ux  = np.zeros(self.size)
+		self.uy  = np.zeros(self.size)
+		self.uz  = np.zeros(self.size)
+		
+		self.fx  = np.zeros(self.size)
+		self.fy  = np.zeros(self.size)
+		self.fz  = np.zeros(self.size)
+		
+		self.m   = np.zeros(self.size)
+		#self.LJ  = np.zeros(self.size)
+		self.q   = np.zeros(self.size)
+		
+		self.sigma   =  np.zeros(self.size)
+		self.epsilon =  np.zeros(self.size)
+		
+		
+		#Energy components 
+		self.E_lj    = 0.0
+		self.E_q     = 0.0
+		
+		
+		for i, atom in enumerate(atoms):
+			
+			self.name.append(atom[0])
+			self.x[i]  = atom[1]
+			self.y[i]  = atom[2]
+			self.z[i]  = atom[3]
+			self.m[i]  = atoms_dic[self.name[i]]['m']
+			
+
+			self.sigma[i]   = atoms_dic[self.name[i]]['sigma'  ]
+			self.epsilon[i] = atoms_dic[self.name[i]]['epsilon']
+			self.q[i]  = atoms_dic[self.name[i]]['q']
+
+
+	def random_velolicies (self, mu = None , sigma = None ):
+		""" Function doc """
+		mu, sigma = 0, 10.1
+		#if sigma == None:
+		#	mu, sigma = 0, 0.1
+		#	
+		#	sigma            = math.sqrt((kb * T)/m)
+		#
+		#if mu == None:
+		#	mu               = 0 
+		
+		
+		self.ux  =  (np.random.normal(mu, sigma, self.size))*1E11
+		self.uy  =  (np.random.normal(mu, sigma, self.size))*1E11
+		self.uz  =  (np.random.normal(mu, sigma, self.size))*1E11
+		
+		
+		
+
+class Atom:
+	""" Class doc """
+	
+	def __init__ (self, name = "UNk", x = 0.0 , y = 0.0 , z = 0.0):
+		""" Class initialiser """
+		pass
+
+
+
+
+'''
 pos = np.random.rand(natoms, 3)
-
 ux  = (np.random.normal(mu, sigma, natoms))*1E10
 uy  = (np.random.normal(mu, sigma, natoms))*1E10
 uz  = (np.random.normal(mu, sigma, natoms))*1E10
-
 fx  = np.zeros(natoms)
 fy  = np.zeros(natoms)
 fz  = np.zeros(natoms)
-
 ene_pot = np.zeros(natoms)
+'''
+
+
+
+
+
+def import_XYZFileTosystem (inputFile):
+	""" Function doc """
+	inpfile  =  open(inputFile, 'r')
+	inpLines = inpfile.readlines()
+	
+	size     = inpLines[0].split()
+	size     = size[0]
+	
+	parameters = inpLines[1].split()
+	
+	
+	atoms = []
+	for line in inpLines[2:]:
+		line2 = line.split()
+		if len(line2) == 4:
+			#print 
+			atoms.append(line2)
+		
+	
+	system = System(atoms)
+	return system
+
 
 
 def export_cell (box):
@@ -68,11 +187,6 @@ def export_cell (box):
 	#                #ATOM, idx, Aname, " ",resn, ' ', chainID,resi,   x,     y,     z,    occ,   tpF,        segID,element," "
 	#                text += "{:<6s}{:5d} {:<4s}{:1s}{:<3s}{:1s}{:4s}{:<2s}   {:8.3f}{:8.3f}{:8.3f}{:6.2f}{:6.2f}      {:<4s}{:2s}  {:2s}\n".format(ATOM,
 	#               
-		
-	
-	
-	
-	
 	ATOM  1      H   LIG  1        -50.00  -50.00  -50.000   1.00  300.00          H 0000  
 	ATOM  2      H   LIG  1        -50.00   50.00  -50.000   1.00  300.00          H 0000  
 	ATOM  3      H   LIG  1        -50.00  -50.00   50.000   1.00  300.00          H 0000  
@@ -112,44 +226,65 @@ def export_cell (box):
 
 
 
-
-
-
-
-def write_xyz_file (pos):
+def write_xyz_file (system, trajout):
 	""" Function doc """
 	
-	trajout = open('traj.xyz', 'a')
+	#trajout = open(trajout, 'a')
 	lines   = [] 
-	lines.append("" + str(natoms)+"\n")
+	lines.append("" + str(system.size)+"\n")
 	lines.append("\n")
 
-	for i in range(natoms):
-		lines.append("Ar  "+str(pos[i][0])+ "   "+ str(pos[i][1])+"   "+str(pos[i][2])+"\n")
-	
+	for i in range(system.size):
+		#lines.append("Ar  "+str(pos[i][0])+ "   "+ str(pos[i][1])+"   "+str(pos[i][2])+"\n")
+		string = "%s     %f    %f    %f      "%(system.name[i], system.x[i], system.y[i], system.z[i]) 
+		lines.append(string+"\n")
+
 	trajout.writelines(lines)
 	
 	
 
-def computeForce (pos, mass):
+def computeForce (system):
 	""" Function doc """
 	pass
 
 
-def integrate (pos, ux, uy, uz, fx, fy, fz, mass, dt):
+
+#def integrate (pos, ux, uy, uz, fx, fy, fz, mass, dt):
+#	""" Function doc """
+#	#usaremos a formula de euler - tem coisa melhor
+#	for i in range(natoms):
+#		print i, pos[i][0],  pos[i][1], pos[i][2], fx[i], fy[i], fz[i]
+#		
+#		pos[i][0]  += ux[i] * dt
+#		ux[i]      += fx[i] * dt / m
+#
+#		pos[i][1]  += uy[i] * dt
+#		ux[i]      += fy[i] * dt / m
+#	
+#		pos[i][2]  += uz[i] * dt
+#		ux[i]      += fz[i] * dt / m
+
+
+
+
+def integrate (system, dt):
 	""" Function doc """
 	#usaremos a formula de euler - tem coisa melhor
-	for i in range(natoms):
-		print i, pos[i][0],  pos[i][1], pos[i][2], fx[i], fy[i], fz[i]
+	for i in range(system.size):
 		
-		pos[i][0]  += ux[i] * dt
-		ux[i]      += fx[i] * dt / m
+		
+		#print i, pos[i][0],  pos[i][1], pos[i][2], fx[i], fy[i], fz[i]
+		system.x[i]  += system.ux[i] * dt
+		system.ux[i] += system.fx[i] * dt / system.m[i]
+		
+		system.y[i]  += system.uy[i] * dt
+		system.uy[i] += system.fy[i] * dt / system.m[i]
+		
+		system.z[i]  += system.uz[i] * dt
+		system.uz[i] += system.fz[i] * dt / system.m[i]
+		
 
-		pos[i][1]  += uy[i] * dt
-		ux[i]      += fy[i] * dt / m
-	
-		pos[i][2]  += uz[i] * dt
-		ux[i]      += fz[i] * dt / m
+
 
 def sphereHitCheck (pos, ux, uy, uz, fx, fy, fz):
 	""" Function doc """
@@ -221,30 +356,73 @@ def sphereHitCheck (pos, ux, uy, uz, fx, fy, fz):
 				pass
 
 
-			#if diff_x <= r:
-			#	ux[i] = -ux[i]
-			#	ux[j] = -ux[j]
-			#
-			#if diff_y <= r:
-			#	uy[i] = -uy[i]
-			#	uy[j] = -uy[j]
-			#
-			#if diff_z <= r:
-			#	uz[i] = -uz[i]
-			#	uz[j] = -uz[j]
+
+
+def wallHitCheck (system, box):
+	""" Function doc """
+	
+	for i in range(system.size):
+	
+		#system.x[i]  += system.ux[i] * dt
+		
+		#'''
+		#walls in X
+		if system.x[i] >= box[0][1]:
+			diff         =   system.x[i] - box[0][1]
+			system.x[i]  =   system.x[i] - diff
+			system.ux[i] =  -system.ux[i]
+		else:
+			pass
 			
-			#print pos[i][0],  pos[i][1], pos[i][2]
-			#pos[i][0]  += ux[i] * dt
-			#ux[i]      += fx[i] * dt / m
-			#
-			#pos[i][1]  += uy[i] * dt
-			#ux[i]      += fy[i] * dt / m
-			#
-			#pos[i][2]  += uz[i] * dt
-			#ux[i]      += fz[i] * dt / m	
+		if system.x[i] <= box[0][0]:
+			diff         =  system.x[i] - box[0][0]
+			system.x[i]  =  system.x[i] - diff
+			system.ux[i] = -system.ux[i]
+		else:
+			pass
+		#'''
 
 
-def wallHitCheck (pos, ux, uy, uz, fx, fy, fz):
+
+		#'''
+		#walls in Y
+		if system.y[i] >= box[1][1]:
+			diff         =  system.y[i] - box[1][1]
+			system.y[i]  =  system.y[i] - diff
+			system.uy[i] = -system.uy[i]
+		else:
+			pass
+			
+		if system.y[i] <= box[1][0]:
+			diff         =   system.y[i] - box[1][0]
+			system.y[i]  =   system.y[i] - diff
+			system.uy[i] =  -system.uy[i]
+		else:
+			pass
+
+		#'''
+		
+		
+		
+		#'''
+		#walls in Z
+		if system.z[i] >= box[2][1]:
+			diff         =  system.z[i] - box[2][1]
+			system.z[i]  =  system.z[i] - diff
+			system.uz[i] = -system.uz[i]
+		else:
+			pass
+			
+		if system.z[i] <= box[2][0]:
+			diff         =   system.z[i] - box[2][0]
+			system.z[i]  =   system.z[i] - diff
+			system.uz[i] =  -system.uz[i]
+		else:
+			pass
+		#'''
+	pass
+	
+def wallHitCheck_old (pos, ux, uy, uz, fx, fy, fz):
 	""" Function doc """
 	
 	for i in range(natoms):
@@ -310,26 +488,78 @@ def wallHitCheck (pos, ux, uy, uz, fx, fy, fz):
 	
 
 
-def run (number_of_steps):
+def compute_NB_interactions (system, LJ =  True, coulonb =  True):
+	""" Function doc  
+	sigma   =  3.4E-10  #(m) 
+	epsilon =  1.65E-21 #(J)
+	"""
+	
+	system.E_lj = 0.0
+	system.E_q  = 0.0
+	for i in  range (system.size):
+		for j in range(i+1, system.size):
+		
+			r_ab  = ((system.x[i] -system.x[j] )**2 + (system.y[i] -system.y[j])**2 + (system.z[i] -system.z[j])**2)**0.5
+			r_ab  = r_ab*1.0E-10
+			
+			if LJ:
+				sig_ab       = (system.sigma[i] + system.sigma[j])/2
+				epsilon_ab   = (system.epsilon[i] * system.epsilon[j])**0.5
+				print r_ab, sig_ab, epsilon_ab
+				E_lj         = 4*epsilon_ab ( (sig_ab / r_ab)**12  - (sig_ab / r_ab)**6 )
+				#system.E_lj += E_lj
+			
+			else:
+				pass
+			
+			
+			if coulonb:
+				E_q = (system.q[i] * system.q[j])/ (r_ab**2)   #4*epsilon_ab ( (sig_ab / r_ab)**12  - (sig_ab / r_ab)**6 )
+				system.E_q += E_q
+			else:
+				pass
+
+
+def run (system, parameters):
 	""" Function doc """
+	
+	number_of_steps = parameters['nsteps']
+	box             = parameters['box']
 	export_cell (box)
-	trajout = open('traj.xyz', 'w')
 	
+	# cleaning trajectroy files
+	trajout = open( parameters['trajout'], 'w')	
+	
+	dt  = parameters['dt']
+	
+
 	for i in range (number_of_steps):
+
+		forces =  computeForce(system)
 		
-	
-		forces =  computeForce(pos, m)
+		#integrate (pos, ux, uy, uz, fx, fy, fz, m, dt)
+		integrate (system, dt)
 		
-		integrate (pos, ux, uy, uz, fx, fy, fz, m, dt)
-
-		sphereHitCheck(pos, ux, uy, uz, fx, fy, fz)
-
-		wallHitCheck(pos, ux, uy, uz, fx, fy, fz)
+		#sphereHitCheck(pos, ux, uy, uz, fx, fy, fz)
+		#sphereHitCheck(system, box)
 		
-		write_xyz_file(pos)
+		#wallHitCheck(pos, ux, uy, uz, fx, fy, fz)
+		wallHitCheck(system, box)
 
-run(number_of_steps)
+		write_xyz_file(system, trajout)
 
+
+
+
+system = import_XYZFileTosystem ("system.xyz")
+
+#for i in range(10):
+#	compute_NB_interactions (system) 
+#	#print i, system.E_lj
+
+
+system.random_velolicies()
+run(system, parameters)
 
 
 
