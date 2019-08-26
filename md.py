@@ -32,11 +32,11 @@ import math
 
 
 parameters = {
-				'kb'         : 1.38E-23                         ,
+				'kb'         : 1                                , # 1.38E-23                         ,
 				'NA'         : 6.022E23                         ,
 				'box'        : [(-50,50), (-50, 50), (-50, 50)] ,
 				'T'          : 273.15                           ,
-				'dt'         : 1E-12                            ,
+				'dt'         : 0.01                             , #1E-12                            ,
 				'nsteps'     : 1000                             ,
 				'r_cutoff'   : 8.0                              ,   
 			
@@ -46,11 +46,10 @@ parameters = {
 
 
 atoms_dic = {			  
-			 'Ar': {'q'       : 0.000   , 
-					"LJ"      : 2.5     ,
-					'm'       : 39.948  ,
-					'sigma'   : 3.4E-10 ,
-					'epsilon' : 1.65E-21,
+			 'Ar': {'q'       : 0.000     , 
+					'm'       : 1         , #39.9 ,
+					'sigma'   : 3.4E-10   ,
+					'epsilon' : 1.65E-21  ,
 					},
 			 
 			 'Ne': {'q' : 0.000, 
@@ -114,7 +113,7 @@ class System:
 
 	def random_velolicies (self, mu = None , sigma = None ):
 		""" Function doc """
-		mu, sigma = 0, 10.1
+		mu, sigma = 0, (100)**0.5
 		#if sigma == None:
 		#	mu, sigma = 0, 0.1
 		#	
@@ -124,34 +123,16 @@ class System:
 		#	mu               = 0 
 		
 		
-		self.ux  =  (np.random.normal(mu, sigma, self.size))*1E11
-		self.uy  =  (np.random.normal(mu, sigma, self.size))*1E11
-		self.uz  =  (np.random.normal(mu, sigma, self.size))*1E11
+		self.ux  =  (np.random.normal(mu, sigma, self.size))#*1E11
+		self.uy  =  (np.random.normal(mu, sigma, self.size))#*1E11
+		self.uz  =  (np.random.normal(mu, sigma, self.size))#*1E11
 		
-		
-		
-
 class Atom:
 	""" Class doc """
 	
 	def __init__ (self, name = "UNk", x = 0.0 , y = 0.0 , z = 0.0):
 		""" Class initialiser """
 		pass
-
-
-
-
-'''
-pos = np.random.rand(natoms, 3)
-ux  = (np.random.normal(mu, sigma, natoms))*1E10
-uy  = (np.random.normal(mu, sigma, natoms))*1E10
-uz  = (np.random.normal(mu, sigma, natoms))*1E10
-fx  = np.zeros(natoms)
-fy  = np.zeros(natoms)
-fz  = np.zeros(natoms)
-ene_pot = np.zeros(natoms)
-'''
-
 
 
 
@@ -177,8 +158,6 @@ def import_XYZFileTosystem (inputFile):
 	
 	system = System(atoms)
 	return system
-
-
 
 def export_cell (box):
 	""" Function doc 
@@ -224,8 +203,6 @@ def export_cell (box):
 	string += "CONECT    7    8           \n"
 	cellout.write(string)
 
-
-
 def write_xyz_file (system, trajout):
 	""" Function doc """
 	
@@ -246,24 +223,6 @@ def write_xyz_file (system, trajout):
 def computeForce (system):
 	""" Function doc """
 	pass
-
-
-
-#def integrate (pos, ux, uy, uz, fx, fy, fz, mass, dt):
-#	""" Function doc """
-#	#usaremos a formula de euler - tem coisa melhor
-#	for i in range(natoms):
-#		print i, pos[i][0],  pos[i][1], pos[i][2], fx[i], fy[i], fz[i]
-#		
-#		pos[i][0]  += ux[i] * dt
-#		ux[i]      += fx[i] * dt / m
-#
-#		pos[i][1]  += uy[i] * dt
-#		ux[i]      += fy[i] * dt / m
-#	
-#		pos[i][2]  += uz[i] * dt
-#		ux[i]      += fz[i] * dt / m
-
 
 
 
@@ -422,92 +381,61 @@ def wallHitCheck (system, box):
 		#'''
 	pass
 	
-def wallHitCheck_old (pos, ux, uy, uz, fx, fy, fz):
-	""" Function doc """
-	
-	for i in range(natoms):
-		#print pos[i][0],  pos[i][1], pos[i][2]
-		
-		pos[i][0]  += ux[i] * dt
-		#'''
-		#walls in X
-		if pos[i][0] >= box[0][1]:
-			diff      =  pos[i][0] - box[0][1]
-			pos[i][0] = pos[i][0]-diff
-			ux[i]     =  -ux[i]
-		else:
-			pass
-			
-		if pos[i][0] <= box[0][0]:
-			diff      =  pos[i][0] - box[0][0]
-			pos[i][0] = pos[i][0]-diff
-			ux[i]     =  -ux[i]
-		else:
-			pass
-		#'''
 
-
-
-		#'''
-		#walls in Y
-		if pos[i][1] >= box[1][1]:
-			diff      =  pos[i][1] - box[1][1]
-			pos[i][1] = pos[i][1]-diff
-			uy[i]     =  -uy[i]
-		else:
-			pass
-			
-		if pos[i][1] <= box[1][0]:
-			diff      =  pos[i][1] - box[1][0]
-			pos[i][1] = pos[i][1]-diff
-			uy[i]     =  -uy[i]
-		else:
-			pass
-
-		#'''
-		
-		
-		
-		#'''
-		#walls in Z
-		if pos[i][2] >= box[2][1]:
-			diff      =  pos[i][2] - box[2][1]
-			pos[i][2] = pos[i][2]-diff
-			uz[i]     =  -uz[i]
-		else:
-			pass
-			
-		if pos[i][2] <= box[2][0]:
-			diff      =  pos[i][2] - box[2][0]
-			pos[i][2] = pos[i][2]-diff
-			uz[i]     =  -uz[i]
-		else:
-			pass
-		#'''
-	pass
-	
-
-
-def compute_NB_interactions (system, LJ =  True, coulonb =  True):
+def compute_NB_interactions (system, LJ =  True, coulonb =  False):
 	""" Function doc  
 	sigma   =  3.4E-10  #(m) 
 	epsilon =  1.65E-21 #(J)
 	"""
+	system.fx  = np.zeros(system.size)
+	system.fy  = np.zeros(system.size)
+	system.fz  = np.zeros(system.size)
 	
 	system.E_lj = 0.0
 	system.E_q  = 0.0
+	
+	
 	for i in  range (system.size):
 		for j in range(i+1, system.size):
 		
-			r_ab  = ((system.x[i] -system.x[j] )**2 + (system.y[i] -system.y[j])**2 + (system.z[i] -system.z[j])**2)**0.5
-			r_ab  = r_ab*1.0E-10
+			x_ij = system.x[i] -system.x[j]
+			y_ij = system.y[i] -system.y[j]
+			z_ij = system.z[i] -system.z[j]
+			
+			r_ij  = ((x_ij)**2 + (y_ij)**2 + (z_ij)**2)**0.5
 			
 			if LJ:
-				sig_ab       = (system.sigma[i] + system.sigma[j])/2
-				epsilon_ab   = (system.epsilon[i] * system.epsilon[j])**0.5
-				print r_ab, sig_ab, epsilon_ab
-				E_lj         = 4*epsilon_ab ( (sig_ab / r_ab)**12  - (sig_ab / r_ab)**6 )
-				#system.E_lj += E_lj
+				#sig_ab       = (system.sigma[i] + system.sigma[j])/2
+				#epsilon_ab   = (system.epsilon[i] * system.epsilon[j])**0.5
+				#print r_ab, sig_ab, epsilon_ab
+				
+				#E_lj         = 40*epsilon_ab *( (sig_ab / r_ab)**12  - (sig_ab / r_ab)**6 )
+				#print E_lj
+				
+				q = 1
+				E_lj         = q*    ( (1 / r_ij)**12  - (1 / r_ij)**6 )
+				
+				F_lj         = 12*q* ( (1 / r_ij**14)  - (1 / r_ij**8) )
+				
+				
+				system.E_lj += E_lj
+				system.fx[i] =  system.fx[i] + F_lj*x_ij
+				system.fy[i] =  system.fy[i] + F_lj*y_ij
+				system.fz[i] =  system.fz[i] + F_lj*z_ij
+
+				system.fx[j] =  system.fx[j] - F_lj*x_ij
+				system.fy[j] =  system.fy[j] - F_lj*y_ij
+				system.fz[j] =  system.fz[j] - F_lj*z_ij
+				
+				##Fx = dV/dr * dr/dx
+				##dr/dx = x/r 
+				#force[k] = lj_force * (r[k]/r_abs)
+				#
+				##accelaration array updated using force due to Lennard jones potential
+				##Fij = -Fji
+				## a(t+dt) = f(t) / m where m = 1 in reduced units 
+				#acc[k][i] += force[k]
+				#acc[k][j] -= force[k]
 			
 			else:
 				pass
@@ -535,8 +463,8 @@ def run (system, parameters):
 
 	for i in range (number_of_steps):
 
-		forces =  computeForce(system)
-		
+		#forces =  computeForce(system)
+		compute_NB_interactions (system, LJ =  True, coulonb =  False)
 		#integrate (pos, ux, uy, uz, fx, fy, fz, m, dt)
 		integrate (system, dt)
 		
@@ -548,18 +476,29 @@ def run (system, parameters):
 
 		write_xyz_file(system, trajout)
 
-
+		print system.E_lj, system.fx, system.fy, system.fz
 
 
 system = import_XYZFileTosystem ("system.xyz")
+#'''
+for i in range(100):
+	compute_NB_interactions (system) 
+	
+	system.x[1] = system.x[1] - i/1000.0
+	
+	Fi = (system.fx[1]**2+ system.fy[1]**2+ system.fz[1]**2)**0.5
+	
+	print i, system.x[1], system.E_lj, Fi, system.fx[1]
+	
+	#print i, system.x[1], system.y[1], system.z[1], system.E_lj, Fi, system.fx[1]
+#'''
 
-#for i in range(10):
-#	compute_NB_interactions (system) 
-#	#print i, system.E_lj
+#system.random_velolicies()
 
+#system.ux[1] = 10.1
+#system.ux[0] = -10.1
 
-system.random_velolicies()
-run(system, parameters)
+#run(system, parameters)
 
 
 
